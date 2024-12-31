@@ -247,3 +247,197 @@ Data preparation
 Model building
 Model evaluation
 Model Interpretability
+
+Project File Structure
+
+    insurance-analytics/
+
+├── data/
+│ ├── raw/ # Raw .txt files
+│ ├── processed/ # Cleaned and processed data
+├── notebooks/ # Jupyter notebooks for EDA and experiments
+├── reports/
+│ ├── eda_report.md # EDA findings
+│ ├── modeling_report.md # Modeling results
+├── src/
+│ ├── **init**.py # Make `src` a module
+│ ├── setup_environment.py # Environment setup script
+│ ├── data_preprocessing.py # Data cleaning and preprocessing
+│ ├── eda.py # EDA script
+│ ├── modeling.py # Machine learning scripts
+│ ├── utils.py # Reusable utility functions
+├── tests/
+│ ├── test_data_preprocessing.py
+│ ├── test_eda.py
+│ ├── test_modeling.py
+├── requirements.txt # Required Python libraries
+├── README.md # Overview and setup instructions
+├── run.sh # Shell script to execute full pipeline
+
+2. Setup Python Environment
+   Script: src/setup_environment.py
+   python
+   Copy code
+   import os
+   import subprocess
+
+def setup_environment():
+"""Sets up the Python environment for the project."""
+print("Installing required packages...")
+packages = [
+"pandas", "numpy", "matplotlib", "seaborn",
+"scikit-learn", "xgboost", "pytest", "argparse"
+]
+subprocess.run(["pip", "install"] + packages)
+print("Environment setup complete.")
+
+if **name** == "**main**":
+setup_environment() 3. Data Preprocessing
+Script: src/data_preprocessing.py
+python
+Copy code
+import pandas as pd
+import argparse
+
+def preprocess_data(input_file, output_file):
+"""Preprocesses raw data and saves a clean CSV file.""" # Load the data
+print(f"Loading data from {input_file}...")
+data = pd.read_csv(input_file, delimiter="|")
+
+    # Handle missing values
+    print("Handling missing values...")
+    data.fillna(method='ffill', inplace=True)
+
+    # Convert dates
+    print("Converting dates...")
+    data['TransactionMonth'] = pd.to_datetime(data['TransactionMonth'], errors='coerce')
+
+    # Save processed data
+    print(f"Saving cleaned data to {output_file}...")
+    data.to_csv(output_file, index=False)
+    print("Preprocessing complete.")
+
+if **name** == "**main**":
+parser = argparse.ArgumentParser(description="Data Preprocessing Script")
+parser.add_argument("input_file", type=str, help="Path to raw data file (.txt)")
+parser.add_argument("output_file", type=str, help="Path to save processed data (.csv)")
+args = parser.parse_args()
+
+    preprocess_data(args.input_file, args.output_file)
+
+4. Exploratory Data Analysis
+   Script: src/eda.py
+   python
+   Copy code
+   import pandas as pd
+   import matplotlib.pyplot as plt
+   import seaborn as sns
+   import argparse
+
+def perform_eda(input_file):
+"""Performs exploratory data analysis on the given file."""
+print(f"Loading processed data from {input_file}...")
+data = pd.read_csv(input_file)
+
+    # Descriptive statistics
+    print("Generating descriptive statistics...")
+    desc_stats = data.describe()
+    print(desc_stats)
+
+    # Visualizations
+    print("Generating visualizations...")
+    sns.histplot(data['TotalPremium'], bins=20, kde=True)
+    plt.title("Histogram of TotalPremium")
+    plt.savefig("reports/total_premium_histogram.png")
+    print("Saved histogram of TotalPremium.")
+
+    sns.scatterplot(data=data, x='TotalPremium', y='TotalClaims', hue='PostalCode')
+    plt.title("TotalPremium vs TotalClaims by PostalCode")
+    plt.savefig("reports/total_premium_vs_total_claims.png")
+    print("Saved scatter plot.")
+
+if **name** == "**main**":
+parser = argparse.ArgumentParser(description="EDA Script")
+parser.add_argument("input_file", type=str, help="Path to processed data file (.csv)")
+args = parser.parse_args()
+
+    perform_eda(args.input_file)
+
+5. Machine Learning Modeling
+   Script: src/modeling.py
+   python
+   Copy code
+   import pandas as pd
+   from sklearn.model_selection import train_test_split
+   from sklearn.ensemble import RandomForestRegressor
+   from sklearn.metrics import mean_squared_error
+   import argparse
+
+def train_model(input_file):
+"""Trains a Random Forest model to predict TotalPremium."""
+print(f"Loading processed data from {input_file}...")
+data = pd.read_csv(input_file)
+
+    # Feature Selection
+    print("Selecting features and target...")
+    features = ['Cylinders', 'cubiccapacity', 'kilowatts', 'SumInsured']
+    target = 'TotalPremium'
+
+    X = data[features]
+    y = data[target]
+
+    # Train-Test Split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Model Training
+    print("Training Random Forest Regressor...")
+    model = RandomForestRegressor(random_state=42)
+    model.fit(X_train, y_train)
+
+    # Evaluate Model
+    predictions = model.predict(X_test)
+    mse = mean_squared_error(y_test, predictions)
+    print(f"Mean Squared Error: {mse}")
+
+    # Save Model
+    print("Saving model...")
+    pd.to_pickle(model, "models/random_forest_model.pkl")
+    print("Model training complete.")
+
+if **name** == "**main**":
+parser = argparse.ArgumentParser(description="Model Training Script")
+parser.add_argument("input_file", type=str, help="Path to processed data file (.csv)")
+args = parser.parse_args()
+
+    train_model(args.input_file)
+
+6. Reports
+   Reports should now detail the steps performed in past tense and include key findings from preprocessing, EDA, and modeling.
+
+Example Report: reports/eda_report.md
+markdown
+Copy code
+
+# Exploratory Data Analysis (EDA) Report
+
+## Data Preprocessing
+
+- Data was loaded from the `.txt` file using a `|` delimiter.
+- Missing values were forward-filled to handle gaps.
+- Transaction dates were converted to a standard datetime format.
+
+## Descriptive Statistics
+
+- Summary statistics were calculated for numerical columns such as `TotalPremium` and `TotalClaims`.
+- `TotalPremium` showed a mean value of $21,000 with a standard deviation of $5,000.
+
+## Key Visualizations
+
+1. A histogram of `TotalPremium` revealed a right-skewed distribution.
+2. A scatter plot of `TotalPremium` vs. `TotalClaims` highlighted strong correlations in certain postal codes.
+
+## Observations
+
+- Geographic variations were observed in claims and premiums.
+- Specific postal codes showed higher average claims, potentially indicating riskier areas.
+  Revisions Consideration
