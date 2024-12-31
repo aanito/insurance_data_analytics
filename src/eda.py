@@ -17,12 +17,12 @@ def perform_eda(input_file):
     print("Generating visualizations...")
     sns.histplot(data['TotalPremium'], bins=20, kde=True)
     plt.title("Histogram of TotalPremium")
-    plt.savefig("reports/total_premium_histogram.png")
+    plt.savefig("data/processed/total_premium_histogram.png")
     print("Saved histogram of TotalPremium.")
 
     sns.scatterplot(data=data, x='TotalPremium', y='TotalClaims', hue='PostalCode')
     plt.title("TotalPremium vs TotalClaims by PostalCode")
-    plt.savefig("reports/total_premium_vs_total_claims.png")
+    plt.savefig("data/processed/total_premium_vs_total_claims.png")
     print("Saved scatter plot.")
 
 if __name__ == "__main__":
